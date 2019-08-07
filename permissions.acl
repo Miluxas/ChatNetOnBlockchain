@@ -1,0 +1,121 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+rule EverybodyCanReadEverything {
+    description: "Allow all participants read access to all resources"
+    participant: "org.miluxas.chatnet2.User"
+    operation: READ
+    resource: "org.miluxas.chatnet2.*"
+    action: ALLOW
+}
+
+rule OwnerHasFullAccessToTheirChatAssets {
+    description: "Allow all participants full access to their assets"
+    participant: "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource: "org.miluxas.chatnet2.Chat"
+    action: ALLOW
+}
+
+rule OwnerHasFullAccessToTheirChatNetAssets {
+    description: "Allow all participants full access to their assets"
+    participant: "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource: "org.miluxas.chatnet2.ChatNet"
+    action: ALLOW
+}
+
+rule EverybodyCanSubmitStartNewChatTransactions {
+    description: "Allow all participants to submit start new chat transactions"
+    participant: "org.miluxas.chatnet2.User"
+    operation: CREATE
+    resource: "org.miluxas.chatnet2.StartNewPeerChat"
+    action: ALLOW
+}
+
+rule EverybodyCanSubmitStartNewGroupChatTransactions {
+    description: "Allow all user to start new group chat transactions"
+    participant: "org.miluxas.chatnet2.User"
+    operation: CREATE
+    resource: "org.miluxas.chatnet2.StartNewGroupChat"
+    action: ALLOW
+}
+
+rule EverybodyCanCreateChatMember {
+    description: "Allow all user to create chat member"
+    participant: "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource: "org.miluxas.chatnet2.Member"
+    action: ALLOW
+}
+
+rule EveryMemberCanCreateMessage{
+    description: "Allow all member to create message"
+    participant: "org.miluxas.chatnet2.User"
+    operation: CREATE
+    resource: "org.miluxas.chatnet2.Message"
+    action: ALLOW
+}
+
+rule EveryMemberCanAddMessageToChat{
+    description: "Allow all member to submit add message to chat"
+    participant(u): "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource(tx): "org.miluxas.chatnet2.SendMessageToChat"
+    condition:(
+      tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === u.getIdentifier()
+        && (tx.chat.type =='PEER' || tx.chat.type =='PUBLIC_GROUP' || tx.chat.type =='PRIVATE_GROUP'|| member.type =='OWNER' || member.type =='ADMIN')
+        && member.status=='NORMAL';  
+        } )
+    )
+    action: ALLOW
+}
+
+rule EveryUserCanJoinToChat{
+    description: "Allow all user join to chat"
+    participant(u): "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource(tx): "org.miluxas.chatnet2.JoinToChat"
+    condition:(
+      !tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === u.getIdentifier();  
+        } )
+    )
+    action: ALLOW
+}
+
+rule SystemACL {
+  description:  "System ACL to permit all access"
+  participant: "org.hyperledger.composer.system.Participant"
+  operation: ALL
+  resource: "org.hyperledger.composer.system.**"
+  action: ALLOW
+}
+
+rule NetworkAdminUser {
+    description: "Grant business network administrators full access to user resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "**"
+    action: ALLOW
+}
+
+rule NetworkAdminSystem {
+    description: "Grant business network administrators full access to system resources"
+    participant: "org.hyperledger.composer.system.NetworkAdmin"
+    operation: ALL
+    resource: "org.hyperledger.composer.system.**"
+    action: ALLOW
+}
