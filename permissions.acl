@@ -165,6 +165,7 @@ rule MemberCanLeaveChat{
     action: ALLOW
 }
 
+
 rule MemberCanDeleteMessage{
     description: "Member can delete message from chat"
     participant(u): "org.miluxas.chatnet2.User"
