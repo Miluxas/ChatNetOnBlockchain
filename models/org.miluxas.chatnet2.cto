@@ -18,6 +18,7 @@ asset ChatNet identified by chatNetId {
   o String chatNetId
   o String name
   o Chat[] chatList
+
 }
 
 asset Chat identified by chatId {
@@ -33,7 +34,7 @@ asset Message identified by messageId {
   o String messageId
   o String content
   o DateTime createAt
-  
+  --> Member owner
 }
 
 asset Member identified by memberId {
@@ -86,6 +87,30 @@ transaction SendMessageToChat {
 
 transaction JoinToChat {
   --> Chat chat
+}
+
+transaction AddOtherUserToChat {
+  --> Chat chat
+  --> User otherUser
+}
+
+transaction ExpelMemberFromChat {
+  --> Chat chat
+  --> Member member
+}
+
+transaction BlockMember {
+  --> Chat chat
+  --> Member member
+}
+
+transaction LeaveChat {
+  --> Chat chat
+}
+
+transaction DeleteMessage {
+  --> Chat chat
+  --> Message message
 }
 
 participant User identified by userId {

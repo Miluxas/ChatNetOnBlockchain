@@ -20,6 +20,7 @@ rule EverybodyCanReadEverything {
     action: ALLOW
 }
 
+
 rule OwnerHasFullAccessToTheirChatAssets {
     description: "Allow all participants full access to their assets"
     participant: "org.miluxas.chatnet2.User"
@@ -95,6 +96,107 @@ rule EveryUserCanJoinToChat{
     )
     action: ALLOW
 }
+
+rule MemberCanAddUserToChat{
+    description: "Member can add user to chat "
+    participant(u): "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource(tx): "org.miluxas.chatnet2.AddOtherUserToChat"
+    condition:(
+      tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === u.getIdentifier()
+        && (tx.chat.type =='PUBLIC_GROUP' || tx.chat.type =='PUBLIC_CANNAL'|| member.type =='OWNER' || member.type =='ADMIN')
+        && member.status=='NORMAL';  
+        } ) 
+      && ! tx.chat.memberList.some(function (member) {
+      return member.user.getIdentifier() === tx.user.getIdentifier() && member.status !=='LEFT';  
+      } )
+    )
+    action: ALLOW
+}
+
+
+rule MemberCanExpelMemberChat{
+    description: "Member can expel other member from chat"
+    participant(u): "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource(tx): "org.miluxas.chatnet2.ExpelMemberFromChat"
+    condition:(
+      tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === u.getIdentifier()
+        && (member.type =='OWNER' || member.type =='ADMIN')
+        && member.status=='NORMAL';  
+        } ) 
+      && ! tx.chat.memberList.some(function (member) {
+      return member.user.getIdentifier() === tx.user.getIdentifier() && member.status !=='LEFT';  
+      } )
+    )
+    action: ALLOW
+}
+
+
+rule MemberCanBlockMemberChat{
+    description: "Member can block other member from chat"
+    participant(u): "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource(tx): "org.miluxas.chatnet2.BlockMember"
+    condition:(
+      tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === u.getIdentifier()
+        && (member.type =='OWNER' || member.type =='ADMIN')
+        && member.status=='NORMAL';  
+        } ) 
+      && ! tx.chat.memberList.some(function (member) {
+      return member.user.getIdentifier() === tx.user.getIdentifier() && member.status !=='LEFT';  
+      } )
+    )
+    action: ALLOW
+}
+
+rule MemberCanLeaveChat{
+    description: "Member can leave from chat"
+    participant(u): "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource(tx): "org.miluxas.chatnet2.LeaveChat"
+    condition:(
+      tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === u.getIdentifier()} ) 
+    )
+    action: ALLOW
+}
+
+rule MemberCanDeleteMessage{
+    description: "Member can delete message from chat"
+    participant(u): "org.miluxas.chatnet2.User"
+    operation: ALL
+    resource(tx): "org.miluxas.chatnet2.DeleteMessage"
+    condition:(
+      (
+        tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === u.getIdentifier()
+        && (member.type =='OWNER' || member.type =='ADMIN');  
+        } )
+        ||
+        tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === u.getIdentifier()
+        && tx.message.owner.user.getIdentifier() === u.getIdentifier()
+        && member.status=='NORMAL';  
+        } )
+      )
+      && tx.chat.messageList.some(function(message){
+        return message.getIdentifier()===tx.message.getIdentifier();
+      })
+    )
+    action: ALLOW
+}
+
+
+
+
+
+
+
+
 
 rule SystemACL {
   description:  "System ACL to permit all access"

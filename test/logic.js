@@ -22,6 +22,7 @@ const BusinessNetworkConnection = require('composer-client').BusinessNetworkConn
 const { BusinessNetworkDefinition, CertificateUtil, IdCard } = require('composer-common');
 const path = require('path');
 
+
 const chai = require('chai');
 chai.should();
 chai.use(require('chai-as-promised'));
