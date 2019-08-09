@@ -19,10 +19,15 @@ Clone this repository
 For run this project 
 
 $ composer archive create -t dir -n .
+
 $ composer network install --card PeerAdmin@hlfv1 --archiveFile miluxas-chatnet2@0.0.1.bna
+
 $ composer network start --networkName miluxas-chatnet2 --networkVersion 0.0.1 --networkAdmin admin --networkAdminEnrollSecret adminpw --card PeerAdmin@hlfv1 --file networkadmin.card
+
 $ composer card import --file networkadmin.card
+
 $ composer-rest-server
+
 
 
 License
