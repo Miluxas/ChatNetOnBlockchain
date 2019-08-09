@@ -64,7 +64,7 @@ rule EverybodyCanCreateChatMember {
 rule EveryMemberCanCreateMessage{
     description: "Allow all member to create message"
     participant: "org.miluxas.chatnet2.User"
-    operation: CREATE
+    operation: ALL
     resource: "org.miluxas.chatnet2.Message"
     action: ALLOW
 }
@@ -100,7 +100,7 @@ rule EveryUserCanJoinToChat{
 rule MemberCanAddUserToChat{
     description: "Member can add user to chat "
     participant(u): "org.miluxas.chatnet2.User"
-    operation: ALL
+    operation: CREATE
     resource(tx): "org.miluxas.chatnet2.AddOtherUserToChat"
     condition:(
       tx.chat.memberList.some(function (member) {
@@ -108,13 +108,12 @@ rule MemberCanAddUserToChat{
         && (tx.chat.type =='PUBLIC_GROUP' || tx.chat.type =='PUBLIC_CANNAL'|| member.type =='OWNER' || member.type =='ADMIN')
         && member.status=='NORMAL';  
         } ) 
-      && ! tx.chat.memberList.some(function (member) {
-      return member.user.getIdentifier() === tx.user.getIdentifier() && member.status !=='LEFT';  
+        && !tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === tx.otherUser.getIdentifier() && member.status ==='LEFT';  
       } )
     )
     action: ALLOW
 }
-
 
 rule MemberCanExpelMemberChat{
     description: "Member can expel other member from chat"
@@ -128,7 +127,7 @@ rule MemberCanExpelMemberChat{
         && member.status=='NORMAL';  
         } ) 
       && ! tx.chat.memberList.some(function (member) {
-      return member.user.getIdentifier() === tx.user.getIdentifier() && member.status !=='LEFT';  
+      return member.user.getIdentifier() === tx.member.user.getIdentifier() && member.status ==='LEFT';  
       } )
     )
     action: ALLOW
@@ -180,7 +179,7 @@ rule MemberCanDeleteMessage{
         ||
         tx.chat.memberList.some(function (member) {
         return member.user.getIdentifier() === u.getIdentifier()
-        && tx.message.owner.user.getIdentifier() === u.getIdentifier()
+        && tx.message.owner.getIdentifier() === u.getIdentifier()
         && member.status=='NORMAL';  
         } )
       )

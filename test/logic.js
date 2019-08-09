@@ -166,6 +166,22 @@ describe('#' + namespace, () => {
         factory = businessNetworkConnection.getBusinessNetwork().getFactory();
     }
 
+    /**
+     * Submit create new chat transaction
+     * @param {String} newChatId New chat Id
+     * @param {String} newChatTitle New chat title
+     * @param {String} newChatType New chat type
+     */
+    async function createNewChat(newChatId,newChatTitle,newChatType){
+        const transaction = factory.newTransaction(namespace, 'StartNewGroupChat');
+        transaction.chatNetId = 'mainchatnetid001';
+        transaction.newChatId = newChatId;
+        transaction.newChatTitle = newChatTitle;
+        transaction.type=newChatType;
+        await businessNetworkConnection.submitTransaction(transaction);
+    }
+
+    /*
     it('Solivan can submit a transaction for start new peer chat', async () => {
         // Use the identity for Solivan.
         await useIdentity(solivanCardName);
@@ -195,13 +211,7 @@ describe('#' + namespace, () => {
         // Use the identity for Solivan.
         await useIdentity(solivanCardName);
 
-        // Submit the transaction.
-        const transaction = factory.newTransaction(namespace, 'StartNewGroupChat');
-        transaction.chatNetId = 'mainchatnetid001';
-        transaction.newChatId = '32556';
-        transaction.newChatTitle = 'first solivan group chat';
-        transaction.type='PUBLIC_GROUP';
-        await businessNetworkConnection.submitTransaction(transaction);
+        await createNewChat('32556','first solivan group chat','PUBLIC_GROUP');
 
 
         // Get the asset.
@@ -220,13 +230,8 @@ describe('#' + namespace, () => {
         // Use the identity for Solivan.
         await useIdentity(solivanCardName);
 
-        // Submit the transaction.
-        const transaction = factory.newTransaction(namespace, 'StartNewGroupChat');
-        transaction.chatNetId = 'mainchatnetid001';
-        transaction.newChatId = '32556';
-        transaction.newChatTitle = 'first solivan group chat';
-        transaction.type='PUBLIC_GROUP';
-        await businessNetworkConnection.submitTransaction(transaction);
+        await createNewChat('32556','first solivan group chat','PUBLIC_GROUP');
+
         //await useIdentity(ferzinCardName);
         // Create message
         const messageAssetRegistery = await businessNetworkConnection.getAssetRegistry(namespace+'.Message');
@@ -234,6 +239,7 @@ describe('#' + namespace, () => {
         const newMessage = factory.newResource(namespace, 'Message',newMessageId);
         newMessage.content='first message';
         newMessage.createAt=new Date();
+        newMessage.owner =factory.newRelationship(namespace, 'User', 'solivan@email.com');
         await messageAssetRegistery.add(newMessage);
 
         // Submit add message to chat transaction
@@ -260,13 +266,8 @@ describe('#' + namespace, () => {
         // Use the identity for Solivan.
         await useIdentity(solivanCardName);
 
-        // Submit the transaction.
-        const transaction = factory.newTransaction(namespace, 'StartNewGroupChat');
-        transaction.chatNetId = 'mainchatnetid001';
-        transaction.newChatId = '32556';
-        transaction.newChatTitle = 'first solivan group chat';
-        transaction.type='PUBLIC_GROUP';
-        await businessNetworkConnection.submitTransaction(transaction);
+        await createNewChat('32556','first solivan group chat','PUBLIC_GROUP');
+
         await useIdentity(ferzinCardName);
         // Create message
         const messageAssetRegistery = await businessNetworkConnection.getAssetRegistry(namespace+'.Message');
@@ -274,6 +275,7 @@ describe('#' + namespace, () => {
         const newMessage = factory.newResource(namespace, 'Message',newMessageId);
         newMessage.content='first message';
         newMessage.createAt=new Date();
+        newMessage.owner =factory.newRelationship(namespace, 'User', 'ferzin@email.com');
         await messageAssetRegistery.add(newMessage);
 
         // Submit add message to chat transaction
@@ -296,18 +298,11 @@ describe('#' + namespace, () => {
         chatNetAsset.chatList[0].chatId.should.equal('32556');
     });
 
-
     it('Ferzin can join to public group that Solivan create it', async () => {
         // Use the identity for Solivan.
         await useIdentity(solivanCardName);
 
-        // Submit the transaction.
-        const transaction = factory.newTransaction(namespace, 'StartNewGroupChat');
-        transaction.chatNetId = 'mainchatnetid001';
-        transaction.newChatId = '32556';
-        transaction.newChatTitle = 'first solivan group chat';
-        transaction.type='PRIVATE_GROUP';
-        await businessNetworkConnection.submitTransaction(transaction);
+        await createNewChat('32556','first solivan group chat','PUBLIC_GROUP');
 
         await useIdentity(ferzinCardName);
 
@@ -315,42 +310,6 @@ describe('#' + namespace, () => {
         const transaction2 = factory.newTransaction(namespace, 'JoinToChat');
         transaction2.chat =factory.newRelationship(namespace, 'Chat', '32556');
         await businessNetworkConnection.submitTransaction(transaction2);
-
-        // Get the asset.
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Chat');
-        const asset1 = await assetRegistry.get('32556');
-
-        // Validate the asset.
-        asset1.title.should.equal('first solivan group chat');
-        console.log(asset1.memberList[1]);
-        asset1.memberList[1].user.getIdentifier().should.equal('ferzin@email.com');
-
-        const chatNetRegistry=await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.ChatNet');
-        const chatNetAsset=await chatNetRegistry.get('mainchatnetid001');
-
-        chatNetAsset.chatList[0].chatId.should.equal('32556');
-    });
-
-
-    it('Ferzin can not join to public group that he is member of it', async () => {
-        // Use the identity for Solivan.
-        await useIdentity(solivanCardName);
-
-        // Submit the transaction.
-        const transaction = factory.newTransaction(namespace, 'StartNewGroupChat');
-        transaction.chatNetId = 'mainchatnetid001';
-        transaction.newChatId = '32556';
-        transaction.newChatTitle = 'first solivan group chat';
-        transaction.type='PRIVATE_GROUP';
-        await businessNetworkConnection.submitTransaction(transaction);
-
-        await useIdentity(ferzinCardName);
-
-        // Submit add message to chat transaction
-        const transaction2 = factory.newTransaction(namespace, 'JoinToChat');
-        transaction2.chat =factory.newRelationship(namespace, 'Chat', '32556');
-        await businessNetworkConnection.submitTransaction(transaction2);
-        //await businessNetworkConnection.submitTransaction(transaction2);
 
         // Get the asset.
         const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Chat');
@@ -366,4 +325,171 @@ describe('#' + namespace, () => {
 
         chatNetAsset.chatList[0].chatId.should.equal('32556');
     });
+
+    it('Ferzin can not join to public group that he is member of it', async () => {
+        // Use the identity for Solivan.
+        await useIdentity(solivanCardName);
+
+        await createNewChat('32556','first solivan group chat','PRIVATE_GROUP');
+
+        await useIdentity(ferzinCardName);
+
+        // Submit add message to chat transaction
+        const transaction2 = factory.newTransaction(namespace, 'JoinToChat');
+        transaction2.chat =factory.newRelationship(namespace, 'Chat', '32556');
+        await businessNetworkConnection.submitTransaction(transaction2);
+        await businessNetworkConnection.submitTransaction(transaction2);
+
+        // Get the asset.
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Chat');
+        const asset1 = await assetRegistry.get('32556');
+
+        // Validate the asset.
+        asset1.title.should.equal('first solivan group chat');
+        //console.log(asset1.memberList[1]);
+        asset1.memberList[1].user.getIdentifier().should.equal('ferzin@email.com');
+
+        const chatNetRegistry=await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.ChatNet');
+        const chatNetAsset=await chatNetRegistry.get('mainchatnetid001');
+
+        chatNetAsset.chatList[0].chatId.should.equal('32556');
+    });
+
+    it('Solivan create a group chat and add Ferzin to it', async () => {
+        // Use the identity for Solivan.
+        await useIdentity(solivanCardName);
+
+        await createNewChat('32556','first solivan group chat','PRIVATE_GROUP');
+
+        // Submit add other user to chat transaction
+        const transaction2 = factory.newTransaction(namespace, 'AddOtherUserToChat');
+        transaction2.chat = factory.newRelationship(namespace, 'Chat', '32556');
+        transaction2.otherUser = factory.newRelationship(namespace, 'User', 'ferzin@email.com');
+        await businessNetworkConnection.submitTransaction(transaction2);
+
+        // Get the asset. and check if Ferzin added to chat
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Chat');
+        const asset1 = await assetRegistry.get('32556');
+        //console.log(asset1.memberList[1]);
+        asset1.memberList[1].user.getIdentifier().should.equal('ferzin@email.com');
+    });
+
+    it('Solivan create a group chat and Ferzin join to it then Solivan expel him', async () => {
+        // Use the identity for Solivan.
+        await useIdentity(solivanCardName);
+
+        await createNewChat('32556','first solivan group chat','PUBLIC_GROUP');
+
+        await useIdentity(ferzinCardName);
+
+        // Submit join to chat transaction
+        const transaction = factory.newTransaction(namespace, 'JoinToChat');
+        transaction.chat =factory.newRelationship(namespace, 'Chat', '32556');
+        await businessNetworkConnection.submitTransaction(transaction);
+
+        await useIdentity(solivanCardName);
+
+        // Get the asset. and check if Ferzin added to chat
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Chat');
+        const asset1 = await assetRegistry.get('32556');
+
+        // Submit add other user to chat transaction
+        const transaction33 = factory.newTransaction(namespace, 'ExpelMemberFromChat');
+        transaction33.chat = factory.newRelationship(namespace, 'Chat', '32556');
+        transaction33.member = factory.newRelationship(namespace, 'Member', asset1.memberList[1].getIdentifier());
+        await businessNetworkConnection.submitTransaction(transaction33);
+
+        const asset2 = await assetRegistry.get('32556');
+        asset2.memberList[1].status.should.equal('EXPELED');
+    });
+
+
+    it('Solivan create a group chat and Ferzin join to it then Ferzin leave it', async () => {
+        // Use the identity for Solivan.
+        await useIdentity(solivanCardName);
+
+        await createNewChat('32556','first solivan group chat','PUBLIC_GROUP');
+
+        await useIdentity(ferzinCardName);
+
+        // Submit join to chat transaction
+        const transaction = factory.newTransaction(namespace, 'JoinToChat');
+        transaction.chat =factory.newRelationship(namespace, 'Chat', '32556');
+        await businessNetworkConnection.submitTransaction(transaction);
+
+        // Get the asset. and check if Ferzin added to chat
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Chat');
+
+        // Submit add other user to chat transaction
+        const transaction33 = factory.newTransaction(namespace, 'LeaveChat');
+        transaction33.chat = factory.newRelationship(namespace, 'Chat', '32556');
+        await businessNetworkConnection.submitTransaction(transaction33);
+
+        const asset2 = await assetRegistry.get('32556');
+        asset2.memberList[1].status.should.equal('LEFT');
+    });
+    */
+    it('Solivan create a group chat and Ferzin join to it add message and delete message', async () => {
+        // Use the identity for Solivan.
+        await useIdentity(solivanCardName);
+
+        await createNewChat('32556','first solivan group chat','PUBLIC_GROUP');
+
+        await useIdentity(ferzinCardName);
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Chat');
+
+        // Submit join to chat transaction
+        const transaction = factory.newTransaction(namespace, 'JoinToChat');
+        transaction.chat =factory.newRelationship(namespace, 'Chat', '32556');
+        await businessNetworkConnection.submitTransaction(transaction);
+
+        // Create message
+        const messageAssetRegistery = await businessNetworkConnection.getAssetRegistry(namespace+'.Message');
+        let newMessageId= '56554fmmdi154';
+        const newMessage = factory.newResource(namespace, 'Message',newMessageId);
+        newMessage.content='first message';
+        newMessage.createAt=new Date();
+        newMessage.owner =factory.newRelationship(namespace, 'User', 'ferzin@email.com');
+        await messageAssetRegistery.add(newMessage);
+
+        // Submit add message to chat transaction
+        const transaction2 = factory.newTransaction(namespace, 'SendMessageToChat');
+        transaction2.chat =factory.newRelationship(namespace, 'Chat', '32556');
+        transaction2.message =factory.newRelationship(namespace, 'Message', newMessageId);
+        await businessNetworkConnection.submitTransaction(transaction2);
+
+        const asset1 = await assetRegistry.get('32556');
+        asset1.messageList.length.should.equal(1);
+
+        // Submit remove message from chat transaction
+        const transaction3 = factory.newTransaction(namespace, 'DeleteMessage');
+        transaction3.chat =factory.newRelationship(namespace, 'Chat', '32556');
+        transaction3.message =factory.newRelationship(namespace, 'Message', newMessageId);
+        await businessNetworkConnection.submitTransaction(transaction3);
+
+        const asset2 = await assetRegistry.get('32556');
+        asset2.messageList.length.should.equal(0);
+    });
+
+    /*it('test chat', async () => {
+        // Use the identity for Solivan.
+        await useIdentity(solivanCardName);
+
+        await createNewChat('32556','first solivan group chat','PUBLIC_GROUP');
+
+        // Get the asset. and check if Ferzin added to chat
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Chat');
+        const asset1 = await assetRegistry.get('32556');
+
+        // Submit add other user to chat transaction
+        const transaction33 = factory.newTransaction(namespace, 'TestOnChat');
+        transaction33.chat = factory.newRelationship(namespace, 'Chat', '32556');
+        await businessNetworkConnection.submitTransaction(transaction33);
+        var asset2 = await assetRegistry.get('32556');
+
+        //console.log(asset1.type);
+        asset2.title.should.equal('PRIVATE_CANNAL');
+    });*/
+
+
 });

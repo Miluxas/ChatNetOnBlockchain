@@ -35,7 +35,7 @@ asset Message identified by messageId {
   o String messageId
   o String content
   o DateTime createAt
-  --> Member owner
+  --> User owner
 }
 
 asset Member identified by memberId {
@@ -65,6 +65,7 @@ enum MemberStatus {
   o BLOCKED
   o REQUESTED
   o LEFT
+  o EXPELED
 }
 
 transaction StartNewPeerChat {
