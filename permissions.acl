@@ -32,13 +32,13 @@ rule OwnerHasFullAccessToTheirChatAssets {
 rule OwnerHasFullAccessToTheirChatNetAssets {
     description: "Allow all participants full access to their assets"
     participant: "org.miluxas.chatnet2.User"
-    operation: ALL
+    operation: READ,UPDATE
     resource: "org.miluxas.chatnet2.ChatNet"
     action: ALLOW
 }
 
 rule EverybodyCanSubmitStartNewChatTransactions {
-    description: "Allow all participants to submit start new chat transactions"
+    description: "Allow all user to submit start new peer chat transactions"
     participant: "org.miluxas.chatnet2.User"
     operation: CREATE
     resource: "org.miluxas.chatnet2.StartNewPeerChat"
@@ -46,7 +46,7 @@ rule EverybodyCanSubmitStartNewChatTransactions {
 }
 
 rule EverybodyCanSubmitStartNewGroupChatTransactions {
-    description: "Allow all user to start new group chat transactions"
+    description: "Allow all user to submit start new group chat transactions"
     participant: "org.miluxas.chatnet2.User"
     operation: CREATE
     resource: "org.miluxas.chatnet2.StartNewGroupChat"
@@ -90,6 +90,9 @@ rule EveryUserCanJoinToChat{
     operation: ALL
     resource(tx): "org.miluxas.chatnet2.JoinToChat"
     condition:(
+      tx.chat.memberList.some(function (member) {
+        return member.user.getIdentifier() === u.getIdentifier() && member.status === 'LEFT';  
+        }) ||
       !tx.chat.memberList.some(function (member) {
         return member.user.getIdentifier() === u.getIdentifier();  
         } )
@@ -159,7 +162,7 @@ rule MemberCanLeaveChat{
     resource(tx): "org.miluxas.chatnet2.LeaveChat"
     condition:(
       tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier()} ) 
+        return member.user.getIdentifier() === u.getIdentifier() && !(member.status in['BLOCKED','EXPELED']) } ) 
     )
     action: ALLOW
 }
