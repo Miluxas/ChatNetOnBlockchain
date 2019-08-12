@@ -458,14 +458,17 @@ describe('#' + namespace, () => {
         transaction2.message =factory.newRelationship(namespace, 'Message', newMessageId);
         await businessNetworkConnection.submitTransaction(transaction2);
 
-        const asset1 = await assetRegistry.get('32556');
-        asset1.messageList.length.should.equal(1);
+        const chatAsset = await assetRegistry.get('32556');
+        chatAsset.messageList.length.should.equal(1);
 
         // Submit remove message from chat transaction
         const transaction3 = factory.newTransaction(namespace, 'DeleteMessage');
         transaction3.chat =factory.newRelationship(namespace, 'Chat', '32556');
         transaction3.message =factory.newRelationship(namespace, 'Message', newMessageId);
         await businessNetworkConnection.submitTransaction(transaction3);
+
+        let ev=events[0];
+        console.log(ev);
 
         const asset2 = await assetRegistry.get('32556');
         asset2.messageList.length.should.equal(0);

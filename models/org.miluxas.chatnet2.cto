@@ -75,6 +75,10 @@ transaction StartNewPeerChat {
   --> User peerUser
 }
 
+event NewChatCreated {
+  --> Chat chat
+}
+
 transaction StartNewGroupChat {
   o String chatNetId
   o String newChatId
@@ -87,8 +91,19 @@ transaction SendMessageToChat {
   --> Message message
 }
 
+event NewMessageAddedToChat {
+  --> Chat chat
+  --> Message newMessage
+}
+
 transaction JoinToChat {
   --> Chat chat
+}
+
+event NewMemberAddedToChat {
+  --> Chat chat
+  --> Member newMember
+  --> Member adderMember optional
 }
 
 transaction AddOtherUserToChat {
@@ -101,7 +116,17 @@ transaction ExpelMemberFromChat {
   --> Member member
 }
 
+event MemberExpeledFromChat {
+  --> Chat chat
+  --> Member member
+}
+
 transaction BlockMember {
+  --> Chat chat
+  --> Member member
+}
+
+event MemberBlockedInChat {
   --> Chat chat
   --> Member member
 }
@@ -110,9 +135,20 @@ transaction LeaveChat {
   --> Chat chat
 }
 
+event MemberLeftChat {
+  --> Chat chat
+  --> Member member
+}
+
 transaction DeleteMessage {
   --> Chat chat
   --> Message message
+}
+
+event MessageDeleted {
+  --> Chat chat
+  --> Message message
+  --> Member member
 }
 
 participant User identified by userId {
