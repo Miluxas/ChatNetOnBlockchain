@@ -181,7 +181,7 @@ describe('#' + namespace, () => {
         await businessNetworkConnection.submitTransaction(transaction);
     }
 
-    /*
+
     it('Solivan can submit a transaction for start new peer chat', async () => {
         // Use the identity for Solivan.
         await useIdentity(solivanCardName);
@@ -205,8 +205,17 @@ describe('#' + namespace, () => {
         const chatNetAsset=await chatNetRegistry.get('mainchatnetid001');
 
         chatNetAsset.chatList[0].chatId.should.equal('32556');
-    });
 
+
+        const memberRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Member');
+        const member = await memberRegistry.get(events[0].newMember.getIdentifier());
+        member.user.getIdentifier().should.equal('solivan@email.com');
+        const member2 = await memberRegistry.get(events[1].newMember.getIdentifier());
+        member2.user.getIdentifier().should.equal('ferzin@email.com');
+        //let ev=events[0];
+        //console.log(ev);
+    });
+    /*
     it('Solivan can submit a transaction for start new group chat', async () => {
         // Use the identity for Solivan.
         await useIdentity(solivanCardName);
@@ -428,7 +437,7 @@ describe('#' + namespace, () => {
         const asset2 = await assetRegistry.get('32556');
         asset2.memberList[1].status.should.equal('LEFT');
     });
-    */
+
     it('Solivan create a group chat and Ferzin join to it add message and delete message', async () => {
         // Use the identity for Solivan.
         await useIdentity(solivanCardName);
