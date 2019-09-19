@@ -14,192 +14,20 @@
 
 rule EverybodyCanReadEverything {
     description: "Allow all participants read access to all resources"
-    participant: "org.miluxas.chatnet2.User"
+    participant: "org.miluxas.BlockchainBase.User"
     operation: READ
-    resource: "org.miluxas.chatnet2.*"
+    resource: "org.miluxas.BlockchainBase.*"
     action: ALLOW
 }
 
-
-rule OwnerHasFullAccessToTheirChatAssets {
-    description: "Allow all participants full access to their assets"
-    participant: "org.miluxas.chatnet2.User"
-    operation: ALL
-    resource: "org.miluxas.chatnet2.Chat"
-    action: ALLOW
-}
-
-rule OwnerHasFullAccessToTheirChatNetAssets {
-    description: "Allow all participants full access to their assets"
-    participant: "org.miluxas.chatnet2.User"
-    operation: READ,UPDATE
-    resource: "org.miluxas.chatnet2.ChatNet"
-    action: ALLOW
-}
-
-rule EverybodyCanSubmitStartNewChatTransactions {
-    description: "Allow all user to submit start new peer chat transactions"
-    participant: "org.miluxas.chatnet2.User"
-    operation: CREATE
-    resource: "org.miluxas.chatnet2.StartNewPeerChat"
-    action: ALLOW
-}
-
-rule EverybodyCanSubmitStartNewGroupChatTransactions {
-    description: "Allow all user to submit start new group chat transactions"
-    participant: "org.miluxas.chatnet2.User"
-    operation: CREATE
-    resource: "org.miluxas.chatnet2.StartNewGroupChat"
-    action: ALLOW
-}
-
-rule EverybodyCanCreateChatMember {
-    description: "Allow all user to create chat member"
-    participant: "org.miluxas.chatnet2.User"
-    operation: ALL
-    resource: "org.miluxas.chatnet2.Member"
-    action: ALLOW
-}
 
 rule EveryMemberCanCreateMessage{
     description: "Allow all member to create message"
-    participant: "org.miluxas.chatnet2.User"
+    participant: "org.miluxas.BlockchainBase.User"
     operation: ALL
-    resource: "org.miluxas.chatnet2.Message"
+    resource: "org.miluxas.BlockchainBase.Message"
     action: ALLOW
 }
-
-rule EveryMemberCanAddMessageToChat{
-    description: "Allow all member to submit add message to chat"
-    participant(u): "org.miluxas.chatnet2.User"
-    operation: ALL
-    resource(tx): "org.miluxas.chatnet2.SendMessageToChat"
-    condition:(
-      tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier()
-        && (tx.chat.type =='PEER' || tx.chat.type =='PUBLIC_GROUP' || tx.chat.type =='PRIVATE_GROUP'|| member.type =='OWNER' || member.type =='ADMIN')
-        && member.status=='NORMAL';  
-        } )
-    )
-    action: ALLOW
-}
-
-rule EveryUserCanJoinToChat{
-    description: "Allow all user join to chat"
-    participant(u): "org.miluxas.chatnet2.User"
-    operation: ALL
-    resource(tx): "org.miluxas.chatnet2.JoinToChat"
-    condition:(
-      tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier() && member.status === 'LEFT';  
-        }) ||
-      !tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier();  
-        } )
-    )
-    action: ALLOW
-}
-
-rule MemberCanAddUserToChat{
-    description: "Member can add user to chat "
-    participant(u): "org.miluxas.chatnet2.User"
-    operation: CREATE
-    resource(tx): "org.miluxas.chatnet2.AddOtherUserToChat"
-    condition:(
-      tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier()
-        && (tx.chat.type =='PUBLIC_GROUP' || tx.chat.type =='PUBLIC_CANNAL'|| member.type =='OWNER' || member.type =='ADMIN')
-        && member.status=='NORMAL';  
-        } ) 
-        && !tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === tx.otherUser.getIdentifier() && member.status ==='LEFT';  
-      } )
-    )
-    action: ALLOW
-}
-
-rule MemberCanExpelMemberChat{
-    description: "Member can expel other member from chat"
-    participant(u): "org.miluxas.chatnet2.User"
-    operation: ALL
-    resource(tx): "org.miluxas.chatnet2.ExpelMemberFromChat"
-    condition:(
-      tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier()
-        && (member.type =='OWNER' || member.type =='ADMIN')
-        && member.status=='NORMAL';  
-        } ) 
-      && ! tx.chat.memberList.some(function (member) {
-      return member.user.getIdentifier() === tx.member.user.getIdentifier() && member.status ==='LEFT';  
-      } )
-    )
-    action: ALLOW
-}
-
-
-rule MemberCanBlockMemberChat{
-    description: "Member can block other member from chat"
-    participant(u): "org.miluxas.chatnet2.User"
-    operation: ALL
-    resource(tx): "org.miluxas.chatnet2.BlockMember"
-    condition:(
-      tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier()
-        && (member.type =='OWNER' || member.type =='ADMIN')
-        && member.status=='NORMAL';  
-        } ) 
-      && ! tx.chat.memberList.some(function (member) {
-      return member.user.getIdentifier() === tx.user.getIdentifier() && member.status !=='LEFT';  
-      } )
-    )
-    action: ALLOW
-}
-
-rule MemberCanLeaveChat{
-    description: "Member can leave from chat"
-    participant(u): "org.miluxas.chatnet2.User"
-    operation: ALL
-    resource(tx): "org.miluxas.chatnet2.LeaveChat"
-    condition:(
-      tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier() && !(member.status in['BLOCKED','EXPELED']) } ) 
-    )
-    action: ALLOW
-}
-
-
-rule MemberCanDeleteMessage{
-    description: "Member can delete message from chat"
-    participant(u): "org.miluxas.chatnet2.User"
-    operation: ALL
-    resource(tx): "org.miluxas.chatnet2.DeleteMessage"
-    condition:(
-      (
-        tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier()
-        && (member.type =='OWNER' || member.type =='ADMIN');  
-        } )
-        ||
-        tx.chat.memberList.some(function (member) {
-        return member.user.getIdentifier() === u.getIdentifier()
-        && tx.message.owner.getIdentifier() === u.getIdentifier()
-        && member.status=='NORMAL';  
-        } )
-      )
-      && tx.chat.messageList.some(function(message){
-        return message.getIdentifier()===tx.message.getIdentifier();
-      })
-    )
-    action: ALLOW
-}
-
-
-
-
-
-
-
-
 
 rule SystemACL {
   description:  "System ACL to permit all access"
