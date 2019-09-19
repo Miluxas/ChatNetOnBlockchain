@@ -12,13 +12,90 @@
  * limitations under the License.
  */
 
-namespace org.miluxas.BlockchainBase
+namespace org.miluxas.chatnet2
 
 asset Message identified by messageId {
   o String messageId
   o String content
   o DateTime createAt
   --> User owner
+}
+
+asset Member identified by memberId {
+  o String memberId
+  --> User user
+  o MemberType type
+  o DateTime addedAt
+  o MemberStatus status
+}
+
+enum ChatType {
+  o PEER
+  o PUBLIC_GROUP
+  o PRIVATE_GROUP
+  o PUBLIC_CANNAL
+  o PRIVATE_CANNAL
+}
+
+enum MemberType {
+  o OWNER
+  o ADMIN
+  o NORMAL
+}
+
+enum MemberStatus {
+  o NORMAL
+  o BLOCKED
+  o REQUESTED
+  o LEFT
+  o EXPELED
+}
+
+transaction StartNewPeerChat {
+  o String chatNetId
+  o String newChatId
+  o String newChatTitle
+  --> User peerUser
+}
+
+transaction StartNewGroupChat {
+  o String chatNetId
+  o String newChatId
+  o String newChatTitle
+  o ChatType type
+}
+
+transaction SendMessageToChat {
+  --> Chat chat
+  --> Message message
+}
+
+transaction JoinToChat {
+  --> Chat chat
+}
+
+transaction AddOtherUserToChat {
+  --> Chat chat
+  --> User otherUser
+}
+
+transaction ExpelMemberFromChat {
+  --> Chat chat
+  --> Member member
+}
+
+transaction BlockMember {
+  --> Chat chat
+  --> Member member
+}
+
+transaction LeaveChat {
+  --> Chat chat
+}
+
+transaction DeleteMessage {
+  --> Chat chat
+  --> Message message
 }
 
 participant User identified by userId {

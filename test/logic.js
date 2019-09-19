@@ -25,7 +25,7 @@ const chai = require('chai');
 chai.should();
 chai.use(require('chai-as-promised'));
 
-const namespace = 'org.miluxas.BlockchainBase';
+const namespace = 'org.miluxas.chatnet2';
 const participantType = 'User';
 const participantNS = namespace + '.' + participantType;
 
@@ -195,23 +195,47 @@ describe('#' + namespace, () => {
 
 
         // Get the asset.
-        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.BlockchainBase.Chat');
+        const assetRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.Chat');
         const asset1 = await assetRegistry.get('32556');
 
         // Validate the asset.
         asset1.title.should.equal('first solivan chat');
-        const chatNetRegistry=await businessNetworkConnection.getAssetRegistry('org.miluxas.BlockchainBase.ChatNet');
+        const chatNetRegistry=await businessNetworkConnection.getAssetRegistry('org.miluxas.chatnet2.ChatNet');
         const chatNetAsset=await chatNetRegistry.get('mainchatnetid001');
 
         chatNetAsset.chatList[0].chatId.should.equal('32556');
 
 
-        const memberRegistry = await businessNetworkConnection.getAssetRegistry('org.miluxas.BlockchainBase.Member');
-        const member = await memberRegistry.get(events[0].newMember.getIdentifier());
-        member.user.getIdentifier().should.equal('solivan@email.com');
-        const member2 = await memberRegistry.get(events[1].newMember.getIdentifier());
-        member2.user.getIdentifier().should.equal('ferzin@email.com');
-        //let ev=events[0];
-        //console.log(ev);
+        // Submit join to chat transaction
+        const transaction = factory.newTransaction(namespace, 'JoinToChat');
+        transaction.chat =factory.newRelationship(namespace, 'Chat', '32556');
+        await businessNetworkConnection.submitTransaction(transaction);
+
+        // Create message
+        const messageAssetRegistery = await businessNetworkConnection.getAssetRegistry(namespace+'.Message');
+        let newMessageId= '56554fmmdi154';
+        const newMessage = factory.newResource(namespace, 'Message',newMessageId);
+        newMessage.content='first message';
+        newMessage.createAt=new Date();
+        newMessage.owner =factory.newRelationship(namespace, 'User', 'ferzin@email.com');
+        await messageAssetRegistery.add(newMessage);
+
+        // Submit add message to chat transaction
+        const transaction2 = factory.newTransaction(namespace, 'SendMessageToChat');
+        transaction2.chat =factory.newRelationship(namespace, 'Chat', '32556');
+        transaction2.message =factory.newRelationship(namespace, 'Message', newMessageId);
+        await businessNetworkConnection.submitTransaction(transaction2);
+
+        const asset1 = await assetRegistry.get('32556');
+        asset1.messageList.length.should.equal(1);
+
+        // Submit remove message from chat transaction
+        const transaction3 = factory.newTransaction(namespace, 'DeleteMessage');
+        transaction3.chat =factory.newRelationship(namespace, 'Chat', '32556');
+        transaction3.message =factory.newRelationship(namespace, 'Message', newMessageId);
+        await businessNetworkConnection.submitTransaction(transaction3);
+
+        const asset2 = await assetRegistry.get('32556');
+        asset2.messageList.length.should.equal(0);
     });
 });
